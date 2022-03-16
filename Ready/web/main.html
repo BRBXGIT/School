@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parser</title>
+    <script src="eel.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="imges/icon.png">
+    <link rel="stylesheet" href="libs\hover.css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" media="all">
+    <link href="libs\font.css" rel="stylesheet">
+</head>
+<body>
+
+    <div align="center" class="content">
+        <img src="imges/icon.png" alt="icon" class="logo">
+        <h2>Parser</h2>
+        <input type="text" id="input_keyword" placeholder="Ключевое слово...">
+        <button class="append_keyword hvr-icon-drop">Добавить слово  <i class="fa fa-plus-circle hvr-icon"></i></button>
+        <button class="append_list hvr-icon-drop">Добавить список  <i class="fa fa-plus-circle hvr-icon"></i></button>
+        <div class="input_file_content hvr-icon-rotate hvr-fade">
+            <span class="input_file_text">Excel файл <i class="fa fa-paperclip hvr-icon"></i></span>
+            <input type="file" id="input_file" placeholder="Перетащите файл сюда">
+        </div>
+        <input type="text" id="input_name_of_list" placeholder="Название листа...">
+        <input type="text" id="input_delete_keyword" placeholder="Индекс удаляемого слова...">
+        <button class="delete_keyword hvr-icon-buzz-out">Удалить слово <i class="fa fa-minus-circle hvr-icon"></i></button>
+        <p id="result">[]</p>
+        <button class="start_parsing_csv hvr-icon-fade">Начать парсинг в csv <i class="fa fa-check hvr-icon"></i></button>
+        <button class="start_parsing_txt hvr-icon-fade">Начать парсинг в txt <i class="fa fa-check hvr-icon"></i></button>
+
+        <div class="errors_exceptions">
+            <span id="errors_exceptions_text">Ошибки и исключения</span>            
+        </div>
+        <button class="clear_errors hvr-icon-fade">Очистить поле <i class="fa fa-lock hvr-icon"></i></button>
+        <button class="change_theme hvr-icon-spin">Сменить тему <i class="fa fa-refresh hvr-icon"></i></button>
+        <button class="off_effects hvr-icon-shrink">Отключить эффекты <i class="fa fa-frown-o hvr-icon"></i></button>
+        <button class="on_effects hvr-icon-grow">Включить эффекты <i class="fa fa-smile-o hvr-icon"></i></button>
+
+    </div>
+ 
+    <!--Частицы на фоне-->
+    <ul class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+
+    <!-- Волны снизу -->
+    <div class="waveWrapper waveAnimation">
+        <div class="waveWrapperInner bgTop">
+          <div class="wave waveTop" style="background-image: url('http://front-end-noobs.com/jecko/img/wave-top.png')"></div>
+        </div>
+        <div class="waveWrapperInner bgMiddle">
+          <div class="wave waveMiddle" style="background-image: url('http://front-end-noobs.com/jecko/img/wave-mid.png')"></div>
+        </div>
+        <div class="waveWrapperInner bgBottom">
+          <div class="wave waveBottom" style="background-image: url('http://front-end-noobs.com/jecko/img/wave-bot.png')"></div>
+        </div>
+    </div>
+
+<script src="libs\jqery.min.js"></script>
+<script type="text/javascript">
+
+    //Запросы функций из python скрипта
+    async function append_keyword(){
+        let searching_text = document.getElementById('input_keyword').value;
+        let result = await eel.input_keywords(searching_text)();
+
+        document.getElementById('result').innerHTML = result;
+
+        document.getElementById('input_keyword').value = '';
+        searching_list.push(searching_text)
+    }
+
+    //Функция пополнения списка словами
+    async function append_list(){
+        let path = document.getElementById('input_file').files[0].name;
+        let sheet_number = document.getElementById('input_name_of_list').value;
+        let result = await eel.input_keywords_from_excel(path, sheet_number)();
+
+        document.getElementById('result').innerHTML = result;
+        document.getElementById('input_name_of_list').value = '';
+    }
+
+    eel.expose(error_in_append_list);
+    function error_in_append_list(text){
+        document.getElementById('errors_exceptions_text').innerHTML = text;
+    }
+
+    //Функция удаления слов из списка
+    async function delete_keyword(){
+        let index = document.getElementById('input_delete_keyword').value;
+        let result = await eel.delete_keywords_from_list(index)();
+
+        document.getElementById('result').innerHTML = result;
+        document.getElementById('input_delete_keyword').value = '';
+    }
+
+    eel.expose(error_in_delete_keyword);
+    function error_in_delete_keyword(text){
+        document.getElementById('errors_exceptions_text').innerHTML = text;
+    }
+
+    eel.expose(start_finish_parsing_msg);
+    function start_finish_parsing_msg(text){
+        document.getElementById('errors_exceptions_text').innerHTML = text;
+    }
+
+    //Функция старта парсинга в текстовый файл
+    async function start_parsing_csv(){
+        let searching_list = document.getElementById('result').textContent;
+        let save_mode = 'csv'
+        let parsing = await eel.parse(searching_list, save_mode)();
+
+        document.getElementById('errors_exceptions_text').innerHTML = 'Ошибки и исключения';
+    }
+
+    //Функция парсинга в csv файл
+    async function start_parsing_txt(){
+        let searching_list = document.getElementById('result').textContent;
+        let save_mode = 'txt'
+        let parsing = await eel.parse(searching_list, save_mode)();
+
+        document.getElementById('errors_exceptions_text').innerHTML = 'Ошибки и исключения';
+    }
+
+    //Смена градиента на фоне
+    let i = 0;
+    document.getElementsByClassName('change_theme')[0].onclick = function() {
+        i += 1;
+        if (i == 5) {
+            i = 0;
+        };
+        themes = ['linear-gradient(45deg, #0B486B, #F56217)', 'linear-gradient(45deg, #6441A5, #2a0845)', 'linear-gradient(45deg, #6A9113, #141517)', 'linear-gradient(45deg, #a8c0ff, #3f2b96)', 'linear-gradient(45deg, #283c86, #45a247)']
+        document.body.style.background = themes[i];
+        document.body.style.backgroundSize = "400% 400%";
+        return false;
+    }
+
+    //Функция отключения эффектов
+    function off_all_effects() {
+        document.getElementsByClassName('waveWrapper waveAnimation')[0].style.opacity = 0;
+        document.getElementsByClassName('circles')[0].style.opacity = 0;
+    }
+
+    //Функция включения эффектов
+    function on_all_effects() {
+        document.getElementsByClassName('waveWrapper waveAnimation')[0].style.opacity = 1;
+        document.getElementsByClassName('circles')[0].style.opacity = 1;
+    }
+
+    //Вызов функций из python скрипта по нажатию кнопок
+    function clear_exceptions() {
+        document.getElementById('errors_exceptions_text').innerHTML = 'Ошибки и исключения';
+    }
+
+    $('.append_keyword').click(function(){
+        append_keyword();
+    });
+
+    $('.append_list').click(function(){
+        append_list();
+    });
+
+    $('.delete_keyword').click(function(){
+        delete_keyword();
+    });
+
+    $('.start_parsing_csv').click(function(){
+        start_parsing_csv();
+    });
+
+    $('.start_parsing_txt').click(function(){
+        start_parsing_txt();
+    });
+
+    $('.clear_errors').click(function() {
+        clear_exceptions();
+    });
+
+    $('.off_effects').click(function() {
+        off_all_effects();
+    });
+
+    $('.on_effects').click(function() {
+        on_all_effects();
+    });
+
+</script>
+</body>
+</html>
